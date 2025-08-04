@@ -1,36 +1,39 @@
 package com.onlinebookstore.book_service.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerator;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
+@JsonIdentityInfo(property = "bookId",
+generator = ObjectIdGenerators.PropertyGenerator.class)
+@Table(name="book-details")
+@Entity
 public class Book {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int bookId;
 
-    @NotBlank(message = "Book name is mandatory")
-    private String name;
+    @NotBlank(message = "Book title is mandatory")
+    private String title;
 
     @NotBlank(message = "Author name is mandatory")
     private String author;
 
-    @Positive(message = "Quantity should be positive")
-    private long quantity;
-
     @Positive(message = "Price should be positive")
     private double price;
+
+    @OneToOne(mappedBy = "bookDetails")
+//    @JsonBackReference
+    private Inventory inventory;
 }

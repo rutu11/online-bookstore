@@ -1,4 +1,4 @@
-package com.onlinebookstore.order_service.controller.entity;
+package com.onlinebookstore.order_service.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,17 +17,14 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class Order {
-
+    
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int orderId;
-    private int userId;
     private int bookId;
-    private int paymentId;
-
+//    private int paymentId;
+    private int userId;
     private LocalDateTime orderPlace;
-    private double totalAmount;
+    private double totalBillAmt;
     private int quantity;
-
-
 }

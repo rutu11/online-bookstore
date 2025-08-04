@@ -1,5 +1,6 @@
 package com.onlinebookstore.book_service.service;
 
+import com.onlinebookstore.book_service.dto.BookDTO;
 import com.onlinebookstore.book_service.entity.Book;
 import com.onlinebookstore.book_service.exceptions.BookNotFoundException;
 import com.onlinebookstore.book_service.repository.BookMgmtRepo;
@@ -18,8 +19,14 @@ public class BookMgmtService {
         bookMgmtRepo = repo;
     }
 
-    public Book addBookToRepo(Book newBook){
-        return bookMgmtRepo.save(newBook);
+    public Book addBookToRepo(BookDTO newBook){
+        Book book = Book.builder()
+                .title(newBook.getTitle())
+                .author(newBook.getAuthor())
+                .price(newBook.getPrice())
+                .build();
+
+        return bookMgmtRepo.save(book);
     }
 
     public List<Book> getAllBooks(){
@@ -30,20 +37,19 @@ public class BookMgmtService {
         return bookMgmtRepo.findById(id).orElseThrow(() -> new BookNotFoundException("Book with ID: "+id+" not found"));
     }
 
-    public Book updateBookById(int id, Book updatedBook){
-        Book existingBook = bookMgmtRepo.findById(id).orElseThrow(() -> new BookNotFoundException("Book with ID: "+id+" not found"));
+    public Book updateBookById(int id, BookDTO updatedBook){
+        Book book = bookMgmtRepo.findById(id).orElseThrow(() -> new BookNotFoundException("Book with ID: "+id+" not found"));
 
-        existingBook.setAuthor(updatedBook.getAuthor());
-        existingBook.setName(updatedBook.getName());
-        existingBook.setPrice(updatedBook.getPrice());
-        existingBook.setQuantity(updatedBook.getQuantity());
+        book.setAuthor(updatedBook.getAuthor());
+        book.setTitle(updatedBook.getTitle());
+        book.setPrice(updatedBook.getPrice());
 
-        return bookMgmtRepo.save(existingBook);
+        return bookMgmtRepo.save(book);
     }
 
     public void deleteBookById(int id){
         if(!bookMgmtRepo.existsById(id)){
-            throw new BookNotFoundException("Book with ID: "+id+" not found");
+            throw new BookNotFoundException("Cannot delete. Book with ID: "+id+" not found");
         }
         bookMgmtRepo.deleteById(id);
     }
