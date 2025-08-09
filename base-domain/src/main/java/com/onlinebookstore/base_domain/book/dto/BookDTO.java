@@ -1,5 +1,4 @@
-package com.onlinebookstore.book_service.dto;
-
+package com.onlinebookstore.base_domain.book.dto;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;

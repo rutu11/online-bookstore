@@ -4,10 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -16,15 +13,18 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Order {
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int orderId;
     private int bookId;
-//    private int paymentId;
-    private int userId;
-    private LocalDateTime orderPlace;
+    private String status; // CREATED, CONFIRMED, FAILED
+    private long quantity;
+    private LocalDateTime orderTimestamp;
     private double totalBillAmt;
-    private int quantity;
+
+//    private int userId;
+//    private int paymentId;
 }

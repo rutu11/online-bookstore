@@ -3,6 +3,7 @@ package com.onlinebookstore.book_service.service;
 import com.onlinebookstore.book_service.dto.BookDTO;
 import com.onlinebookstore.book_service.entity.Book;
 import com.onlinebookstore.book_service.exceptions.BookNotFoundException;
+import com.onlinebookstore.book_service.mapper.BookMapper;
 import com.onlinebookstore.book_service.repository.BookMgmtRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,21 +21,19 @@ public class BookMgmtService {
     }
 
     public Book addBookToRepo(BookDTO newBook){
-        Book book = Book.builder()
-                .title(newBook.getTitle())
-                .author(newBook.getAuthor())
-                .price(newBook.getPrice())
-                .build();
-
-        return bookMgmtRepo.save(book);
+        Book bookEntity = BookMapper.toEntity(newBook);
+        return bookMgmtRepo.save(bookEntity);
     }
 
-    public List<Book> getAllBooks(){
-        return bookMgmtRepo.findAll();
+    public List<BookDTO> getAllBooks(){
+        List<Book> books = bookMgmtRepo.findAll();
+        return BookMapper.toDTOList(books);
     }
 
-    public Book getBookById(int id){
-        return bookMgmtRepo.findById(id).orElseThrow(() -> new BookNotFoundException("Book with ID: "+id+" not found"));
+    public BookDTO getBookById(int id){
+        System.out.println("Fetcing book by id....");
+        Book book = bookMgmtRepo.findById(id).orElseThrow(() -> new BookNotFoundException("Book with ID: " + id + " not found"));
+        return BookMapper.toDTO(book);
     }
 
     public Book updateBookById(int id, BookDTO updatedBook){

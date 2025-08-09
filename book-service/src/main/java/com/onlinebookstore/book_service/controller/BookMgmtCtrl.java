@@ -2,8 +2,8 @@ package com.onlinebookstore.book_service.controller;
 
 import com.onlinebookstore.book_service.dto.BookDTO;
 import com.onlinebookstore.book_service.entity.Book;
-import com.onlinebookstore.book_service.entity.Inventory;
 import com.onlinebookstore.book_service.service.BookMgmtService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,21 +24,21 @@ public class BookMgmtCtrl {
     }
 
     @PostMapping
-    public ResponseEntity<Book> addBookToRepo(@RequestBody BookDTO newBook) {
+    public ResponseEntity<Book> addBookToRepo(@Valid @RequestBody BookDTO newBook) {
         Book book = bookMgmtService.addBookToRepo(newBook);
         URI location = URI.create("/books/" + book.getBookId()); //In headers
         return ResponseEntity.created(location).body(book);
     }
 
     @GetMapping
-    public ResponseEntity<List<Book>> getAllBooks() {
-        List<Book> allBooks = bookMgmtService.getAllBooks();
+    public ResponseEntity<List<BookDTO>> getAllBooks() {
+        List<BookDTO> allBooks = bookMgmtService.getAllBooks();
         return ResponseEntity.ok(allBooks);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBookById(@PathVariable int id) {
-        Book book = bookMgmtService.getBookById(id);
+    public ResponseEntity<BookDTO> getBookById(@PathVariable int id) {
+        BookDTO book = bookMgmtService.getBookById(id);
         return ResponseEntity.ok(book);
     }
 
