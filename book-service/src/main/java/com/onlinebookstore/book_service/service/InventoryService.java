@@ -8,7 +8,9 @@ import com.onlinebookstore.book_service.exceptions.BookNotFoundException;
 import com.onlinebookstore.book_service.mapper.InventoryMapper;
 import com.onlinebookstore.book_service.repository.BookMgmtRepo;
 import com.onlinebookstore.book_service.repository.InventoryRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -20,13 +22,17 @@ public class InventoryService {
 
     private final InventoryRepo inventoryRepo;
     private final BookMgmtRepo bookMgmtRepo;
+    private final KafkaTemplate<String, OrderEvents> kafkaTemplate;
 
-    @Autowired
-    private KafkaTemplate<String, OrderEvents> kafkaTemplate;
+    private static final Logger LOGGER = LoggerFactory.getLogger(InventoryService.class);
 
-    public InventoryService(InventoryRepo inventoryRepo, BookMgmtRepo bookMgmtRepo) {
+    @Value("${spring.kafka.topic.inventory-response}")
+    private String inventoryRespTopic;
+
+    public InventoryService(InventoryRepo inventoryRepo, BookMgmtRepo bookMgmtRepo, KafkaTemplate<String, OrderEvents> kafkaTemplate) {
         this.inventoryRepo = inventoryRepo;
         this.bookMgmtRepo = bookMgmtRepo;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     public Inventory addStock(int bookId, long stock){
@@ -39,6 +45,7 @@ public class InventoryService {
                 .stock(stock)
                 .build();
 
+        LOGGER.info("Book Id: {} found, adding stock", bookId);
         return inventoryRepo.save(stockToAdd);
     }
 
@@ -57,22 +64,40 @@ public class InventoryService {
     public Inventory updateStockForABook(int bookId, long newStock){
         Inventory dataFound = inventoryRepo.findByBookDetails_BookId(bookId).orElseThrow(() -> new RuntimeException("Inventory not found.."));
         dataFound.setStock(newStock);
+
+        LOGGER.info("Book Id: {} found, updating stock", bookId);
         return inventoryRepo.save(dataFound);
     }
 
-    @KafkaListener(topics ="order-events", groupId = "inventory-group")
+    @KafkaListener(topics = "${spring.kafka.topic.order-events}", groupId = "inventory-group")
     public void handleOrderEvent(OrderEvents orderEvent){
         Inventory bookStock = inventoryRepo.findByBookDetails_BookId(orderEvent.getBookId()).orElse(null);
 
         if(bookStock != null && bookStock.getStock() >= orderEvent.getQuantity()){
             long updatedStock = bookStock.getStock() - orderEvent.getQuantity();
             bookStock.setStock(updatedStock);
-            inventoryRepo.save(bookStock);
+
+            Inventory updatedInventory = inventoryRepo.save(bookStock);
+            LOGGER.info("Inventory updated => {}", updatedInventory.toString());
             orderEvent.setEventType("INVENTORY-CONFIRMED");
         }
         else {
+            LOGGER.info("Failed to confirm inventory for id: {}", orderEvent.getOrderId());
             orderEvent.setEventType("INVENTORY-FAILED");
         }
-        kafkaTemplate.send("inventory-response", orderEvent);
+
+        LOGGER.info("Sending InventoryEvent response => {}", orderEvent.toString());
+        kafkaTemplate.send(inventoryRespTopic, orderEvent)
+                .whenComplete((result, ex) -> {
+                    if(ex == null){
+                        LOGGER.info("OK inventory updated Status => {}",  result.getRecordMetadata());
+                    }
+                    else {
+                        ex.printStackTrace();
+                        Throwable root = org.apache.commons.lang3.exception.ExceptionUtils.getRootCause(ex);
+                        LOGGER.error(String.valueOf(root));
+                    }
+                });
+
     }
 }

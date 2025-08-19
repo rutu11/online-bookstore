@@ -1,9 +1,6 @@
 package com.onlinebookstore.order_service.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -14,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
+@Table(name = "order_details")
 public class Order {
     
     @Id
@@ -24,7 +22,4 @@ public class Order {
     private long quantity;
     private LocalDateTime orderTimestamp;
     private double totalBillAmt;
-
-//    private int userId;
-//    private int paymentId;
 }

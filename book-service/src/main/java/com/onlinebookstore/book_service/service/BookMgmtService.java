@@ -5,6 +5,8 @@ import com.onlinebookstore.book_service.entity.Book;
 import com.onlinebookstore.book_service.exceptions.BookNotFoundException;
 import com.onlinebookstore.book_service.mapper.BookMapper;
 import com.onlinebookstore.book_service.repository.BookMgmtRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,8 @@ import java.util.List;
 public class BookMgmtService {
 
     private final BookMgmtRepo bookMgmtRepo;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BookMgmtService.class);
 
     @Autowired
     public BookMgmtService(BookMgmtRepo repo) {
@@ -31,7 +35,6 @@ public class BookMgmtService {
     }
 
     public BookDTO getBookById(int id){
-        System.out.println("Fetcing book by id....");
         Book book = bookMgmtRepo.findById(id).orElseThrow(() -> new BookNotFoundException("Book with ID: " + id + " not found"));
         return BookMapper.toDTO(book);
     }
@@ -42,6 +45,8 @@ public class BookMgmtService {
         book.setAuthor(updatedBook.getAuthor());
         book.setTitle(updatedBook.getTitle());
         book.setPrice(updatedBook.getPrice());
+
+        LOGGER.info("Book Id: {} found and updating details", book.getBookId());
 
         return bookMgmtRepo.save(book);
     }
